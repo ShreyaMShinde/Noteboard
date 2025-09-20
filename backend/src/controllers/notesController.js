@@ -5,7 +5,7 @@ export async function getAllNotes(req, res) {
     const notes = await Note.find().sort({ createdAt: -1 });
     res.status(200).json(notes);
   } catch (error) {
-    console.error("❌ Error in getAllNotes controller:", error); // log full error
+    console.error("❌ Error in getAllNotes controller:", error); 
     res.status(500).json({ message: "Internal server error", error: error.message });
   }
 }
@@ -32,7 +32,7 @@ export async function createNote(req, res) {
     }
 
     const note = new Note({ title, content });
-    const savedNote = await note.save(); // ✅ fix here
+    const savedNote = await note.save(); 
 
     res.status(201).json(savedNote);
   } catch (error) {
@@ -40,6 +40,7 @@ export async function createNote(req, res) {
     res.status(500).json({ message: "Internal server error" });
   }
 }
+
 
 export async function updateNote(req, res) {
     try {

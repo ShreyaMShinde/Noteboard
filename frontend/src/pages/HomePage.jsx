@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
+import api   from '../lib/axios';
+import { useLocation } from 'react-router-dom'; 
 import Navbar from '../components/Navbar';
 import RateLimitedUI from '../components/RateLimitedUI';
 import NoteCard from '../components/NoteCard';
@@ -9,27 +10,37 @@ const HomePage = () => {
   const [isRateLimited, setIsRateLimited] = useState(false);
   const [notes, setNotes] = useState([]);
   const [loading, setLoading] = useState(true);
+  const location = useLocation(); 
+
+  const fetchNotes = async () => {
+    try {
+      setLoading(true);
+      const response = await api.get('/notes');
+      setNotes(response.data);
+      setIsRateLimited(false);
+    } catch (error) {
+      console.error("Error Fetching Notes:", error);
+      if (error.response?.status === 429) {
+        setIsRateLimited(true);
+      } else {
+        toast.error(error.response?.data?.message || "Error Fetching Notes");
+      }
+    } finally {
+      setLoading(false);
+    }
+  };
+
 
   useEffect(() => {
-    const fetchNotes = async () => {
-      try {
-        const response = await axios.get('http://localhost:5001/api/notes');
-        setNotes(response.data);
-        setIsRateLimited(false);
-      } catch (error) {
-        console.error("Error Fetching Notes:", error);
-        if (error.response?.status === 429) {
-          setIsRateLimited(true);
-        } else {
-          toast.error(error.response?.data?.message || "Error Fetching Notes");
-        }
-      } finally {
-        setLoading(false);
-      }
-    };
-
     fetchNotes();
   }, []);
+
+  
+  useEffect(() => {
+    if (location.state?.refresh) {
+      fetchNotes();
+    }
+  }, [location.state]);
 
   return (
     <div className="min-h-screen">
@@ -50,6 +61,11 @@ const HomePage = () => {
                 <NoteCard key={note._id} note={note} />
               ))}
             </div>
+          )}
+          {!loading && notes.length === 0 && (
+            <p className="text-center text-gray-400 py-10">
+              No notes available. Create one!
+            </p>
           )}
         </div>
       )}

@@ -10,7 +10,7 @@ dotenv.config();
 const app = express();
 const PORT = process.env.PORT || 5001;
 
-// ✅ Middleware order matters!
+// Middleware
 app.use(cors({
   origin: "http://localhost:5173", // allow frontend
   credentials: true,               // optional if using cookies/auth
@@ -19,10 +19,10 @@ app.use(cors({
 app.use(express.json()); // parse JSON bodies
 app.use(rateLimiter);
 
-// ✅ Routes
+//  Routes
 app.use("/api/notes", notesRoutes);
 
-// ✅ Start Server
+//  Start Server
 connectDB().then(() => {
   app.listen(PORT, () => {
     console.log(`🚀 Server started on Port: ${PORT}`);
