@@ -5,7 +5,7 @@ import { formatDate } from '../lib/utils';
 
 const NoteCard = ({ note, onDelete, deletingId }) => {
   const handleDeleteClick = (e) => {
-    e.preventDefault(); // ✅ prevent navigation to detail page
+    e.preventDefault(); 
     onDelete(note._id);
   };
 
