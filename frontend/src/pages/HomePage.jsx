@@ -1,21 +1,22 @@
 import React, { useState, useEffect } from 'react';
-import api   from '../lib/axios';
-import { useLocation } from 'react-router-dom'; 
+import axios from 'axios';
 import Navbar from '../components/Navbar';
 import RateLimitedUI from '../components/RateLimitedUI';
 import NoteCard from '../components/NoteCard';
 import toast from 'react-hot-toast';
+import { useLocation } from 'react-router-dom';
 
 const HomePage = () => {
   const [isRateLimited, setIsRateLimited] = useState(false);
   const [notes, setNotes] = useState([]);
   const [loading, setLoading] = useState(true);
-  const location = useLocation(); 
+  const [deletingId, setDeletingId] = useState(null); // ✅ track deleting note
+
+  const location = useLocation();
 
   const fetchNotes = async () => {
     try {
-      setLoading(true);
-      const response = await api.get('/notes');
+      const response = await axios.get('http://localhost:5001/api/notes');
       setNotes(response.data);
       setIsRateLimited(false);
     } catch (error) {
@@ -30,17 +31,27 @@ const HomePage = () => {
     }
   };
 
-
   useEffect(() => {
     fetchNotes();
-  }, []);
+  }, [location]);
 
-  
-  useEffect(() => {
-    if (location.state?.refresh) {
-      fetchNotes();
+  // ✅ Delete handler with confirmation + spinner
+  const handleDelete = async (id) => {
+    const confirmDelete = window.confirm("Are you sure you want to delete this note?");
+    if (!confirmDelete) return;
+
+    setDeletingId(id);
+    try {
+      await axios.delete(`http://localhost:5001/api/notes/${id}`);
+      toast.success("Note deleted successfully!");
+      setNotes(notes.filter((note) => note._id !== id));
+    } catch (error) {
+      console.error("Error deleting note:", error);
+      toast.error("Failed to delete note");
+    } finally {
+      setDeletingId(null);
     }
-  }, [location.state]);
+  };
 
   return (
     <div className="min-h-screen">
@@ -58,14 +69,14 @@ const HomePage = () => {
           {notes.length > 0 && (
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
               {notes.map((note) => (
-                <NoteCard key={note._id} note={note} />
+                <NoteCard
+                  key={note._id}
+                  note={note}
+                  onDelete={handleDelete}
+                  deletingId={deletingId}
+                />
               ))}
             </div>
-          )}
-          {!loading && notes.length === 0 && (
-            <p className="text-center text-gray-400 py-10">
-              No notes available. Create one!
-            </p>
           )}
         </div>
       )}

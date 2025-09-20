@@ -1,9 +1,14 @@
-import React from 'react'
+import React from 'react';
 import { Link } from "react-router-dom"; 
-import { PenSquareIcon, Trash2Icon } from 'lucide-react'
-import { formatDate } from '../lib/utils'
+import { PenSquareIcon, Trash2Icon, Loader2Icon } from 'lucide-react';
+import { formatDate } from '../lib/utils';
 
-const NoteCard = ({ note }) => {   // ✅ Accept note as prop
+const NoteCard = ({ note, onDelete, deletingId }) => {
+  const handleDeleteClick = (e) => {
+    e.preventDefault(); // ✅ prevent navigation to detail page
+    onDelete(note._id);
+  };
+
   return (
     <Link
       to={`/note/${note._id}`}
@@ -20,14 +25,22 @@ const NoteCard = ({ note }) => {   // ✅ Accept note as prop
 
           <div className="flex items-center gap-1">
             <PenSquareIcon className="size-4" />
-            <button className="btn btn-ghost btn-xs text-error">
-              <Trash2Icon className="size-4" />
+            <button
+              className="btn btn-ghost btn-xs text-error"
+              onClick={handleDeleteClick}
+              disabled={deletingId === note._id} // ✅ disable while deleting
+            >
+              {deletingId === note._id ? (
+                <Loader2Icon className="size-4 animate-spin" /> // ✅ spinner
+              ) : (
+                <Trash2Icon className="size-4" />
+              )}
             </button>
           </div>
         </div>
       </div>
     </Link>
-  )
-}
+  );
+};
 
-export default NoteCard
+export default NoteCard;
